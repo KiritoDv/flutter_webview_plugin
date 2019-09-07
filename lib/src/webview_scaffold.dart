@@ -125,7 +125,7 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
       floatingActionButton: widget.floatingActionButton,
       floatingActionButtonLocation: widget.floatingActionButtonLocation,
       body: Stack(
-        children: <Widget>[
+        children: <Widget>[          
           _WebviewPlaceholder(
             onRectChanged: (Rect value) {
               if (_rect == null) {
@@ -223,12 +223,12 @@ class _WebviewPlaceholderRender extends RenderProxyBox {
   }
 
   @override
-  void paint(PaintingContext context, Offset offset) {
-    super.paint(context, offset);
+  void paint(PaintingContext context, Offset offset) {    
     final rect = offset & size;
     if (_rect != rect) {
       _rect = rect;
       notifyRect();
     }
+    super.paint(context, offset);
   }
 }
