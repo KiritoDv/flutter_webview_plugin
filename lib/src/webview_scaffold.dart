@@ -39,7 +39,8 @@ class WebviewScaffold extends StatefulWidget {
     this.geolocationEnabled,
     this.debuggingEnabled = false,
     this.floatingActionButton,
-    this.floatingActionButtonLocation
+    this.floatingActionButtonLocation,
+    this.renderChild
   }) : super(key: key);
 
   final PreferredSizeWidget appBar;
@@ -71,6 +72,7 @@ class WebviewScaffold extends StatefulWidget {
   final bool useWideViewPort;
   final bool debuggingEnabled;
 
+  final Widget renderChild;
   final Widget floatingActionButton;
   final FloatingActionButtonLocation floatingActionButtonLocation;
 
@@ -122,48 +124,53 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
       bottomNavigationBar: widget.bottomNavigationBar,
       floatingActionButton: widget.floatingActionButton,
       floatingActionButtonLocation: widget.floatingActionButtonLocation,
-      body: _WebviewPlaceholder(
-        onRectChanged: (Rect value) {
-          if (_rect == null) {
-            _rect = value;
-            webviewReference.launch(
-              widget.url,
-              headers: widget.headers,
-              withJavascript: widget.withJavascript,
-              clearCache: widget.clearCache,
-              clearCookies: widget.clearCookies,
-              hidden: widget.hidden,
-              enableAppScheme: widget.enableAppScheme,
-              userAgent: widget.userAgent,
-              rect: _rect,
-              withZoom: widget.withZoom,
-              displayZoomControls: widget.displayZoomControls,
-              withLocalStorage: widget.withLocalStorage,
-              withLocalUrl: widget.withLocalUrl,
-              localUrlScope: widget.localUrlScope,
-              withOverviewMode: widget.withOverviewMode,
-              useWideViewPort: widget.useWideViewPort,
-              scrollBar: widget.scrollBar,
-              supportMultipleWindows: widget.supportMultipleWindows,
-              appCacheEnabled: widget.appCacheEnabled,
-              allowFileURLs: widget.allowFileURLs,
-              invalidUrlRegex: widget.invalidUrlRegex,
-              geolocationEnabled: widget.geolocationEnabled,
-              debuggingEnabled: widget.debuggingEnabled,
-            );
-          } else {
-            if (_rect != value) {
-              _rect = value;
-              _resizeTimer?.cancel();
-              _resizeTimer = Timer(const Duration(milliseconds: 250), () {
-                // avoid resizing to fast when build is called multiple time
-                webviewReference.resize(_rect);
-              });
-            }
-          }
-        },
-        child: widget.initialChild ?? const Center(child: const CircularProgressIndicator()),
-      ),
+      body: Stack(
+        children: <Widget>[
+          _WebviewPlaceholder(
+            onRectChanged: (Rect value) {
+              if (_rect == null) {
+                _rect = value;
+                webviewReference.launch(
+                  widget.url,
+                  headers: widget.headers,
+                  withJavascript: widget.withJavascript,
+                  clearCache: widget.clearCache,
+                  clearCookies: widget.clearCookies,
+                  hidden: widget.hidden,
+                  enableAppScheme: widget.enableAppScheme,
+                  userAgent: widget.userAgent,
+                  rect: _rect,
+                  withZoom: widget.withZoom,
+                  displayZoomControls: widget.displayZoomControls,
+                  withLocalStorage: widget.withLocalStorage,
+                  withLocalUrl: widget.withLocalUrl,
+                  localUrlScope: widget.localUrlScope,
+                  withOverviewMode: widget.withOverviewMode,
+                  useWideViewPort: widget.useWideViewPort,
+                  scrollBar: widget.scrollBar,
+                  supportMultipleWindows: widget.supportMultipleWindows,
+                  appCacheEnabled: widget.appCacheEnabled,
+                  allowFileURLs: widget.allowFileURLs,
+                  invalidUrlRegex: widget.invalidUrlRegex,
+                  geolocationEnabled: widget.geolocationEnabled,
+                  debuggingEnabled: widget.debuggingEnabled,
+                );
+              } else {
+                if (_rect != value) {
+                  _rect = value;
+                  _resizeTimer?.cancel();
+                  _resizeTimer = Timer(const Duration(milliseconds: 250), () {
+                    // avoid resizing to fast when build is called multiple time
+                    webviewReference.resize(_rect);
+                  });
+                }
+              }
+            },
+            child: widget.initialChild ?? const Center(child: const CircularProgressIndicator()),
+          ),
+          widget.renderChild
+        ],
+      )
     );
   }
 }
@@ -192,7 +199,7 @@ class _WebviewPlaceholder extends SingleChildRenderObjectWidget {
 
 class _WebviewPlaceholderRender extends RenderProxyBox {
   _WebviewPlaceholderRender({
-    RenderBox child,
+    RenderBox child,  
     ValueChanged<Rect> onRectChanged,
   })  : _callback = onRectChanged,
         super(child);
