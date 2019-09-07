@@ -38,6 +38,8 @@ class WebviewScaffold extends StatefulWidget {
     this.invalidUrlRegex,
     this.geolocationEnabled,
     this.debuggingEnabled = false,
+    this.floatingActionButton,
+    this.floatingActionButtonLocation
   }) : super(key: key);
 
   final PreferredSizeWidget appBar;
@@ -69,6 +71,9 @@ class WebviewScaffold extends StatefulWidget {
   final bool useWideViewPort;
   final bool debuggingEnabled;
 
+  final Widget floatingActionButton;
+  final FloatingActionButtonLocation floatingActionButtonLocation;
+
   @override
   _WebviewScaffoldState createState() => _WebviewScaffoldState();
 }
@@ -84,23 +89,7 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
   @override
   void initState() {
     super.initState();
-    webviewReference.close();
-
-    _onBack = webviewReference.onBack.listen((_) async {
-      if (!mounted) return;
-
-      // The willPop/pop pair here is equivalent to Navigator.maybePop(),
-      // which is what's called from the flutter back button handler.
-      final pop = await _topMostRoute.willPop();
-      if (pop == RoutePopDisposition.pop) {
-        // Close the webview if it's on the route at the top of the stack.
-        final isOnTopMostRoute = _topMostRoute == ModalRoute.of(context);
-        if (isOnTopMostRoute) {
-          webviewReference.close();
-        }
-        Navigator.pop(context);
-      }
-    });
+    webviewReference.close();    
 
     if (widget.hidden) {
       _onStateChanged =
@@ -110,17 +99,7 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
         }
       });
     }
-  }
-
-  /// Equivalent to [Navigator.of(context)._history.last].
-  Route<dynamic> get _topMostRoute {
-    var topMost;
-    Navigator.popUntil(context, (route) {
-      topMost = route;
-      return true;
-    });
-    return topMost;
-  }
+  }  
 
   @override
   void dispose() {
@@ -141,6 +120,8 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
       resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
       persistentFooterButtons: widget.persistentFooterButtons,
       bottomNavigationBar: widget.bottomNavigationBar,
+      floatingActionButton: widget.floatingActionButton,
+      floatingActionButtonLocation: widget.floatingActionButtonLocation,
       body: _WebviewPlaceholder(
         onRectChanged: (Rect value) {
           if (_rect == null) {
